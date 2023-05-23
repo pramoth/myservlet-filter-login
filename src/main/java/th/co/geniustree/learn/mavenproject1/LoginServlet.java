@@ -7,39 +7,43 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.UUID;
 
-/**
- *
- * @author pramoth
- */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
+@WebServlet(name = "LoginServlet", urlPatterns = {"/login", "/cc", "/www/*"})
 public class LoginServlet extends HttpServlet {
-
+    static final String SESSION_KEY = "login_user";
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession();
+        //1 exiting ? nop : create new session
+        //   1.1 generate cookies keys
+        //   1.2 set cookies jsessionid as key and 1.1 as value
+        String logedInUser = (String) session.getAttribute(SESSION_KEY);
         try (PrintWriter out = response.getWriter()) {
-            String username = request.getParameter("username");
-            String password = request.getParameter("password");
-            Object dbPassword = TempraryUserStorage.userDatabase.get(username);
-            if (password != null && password.equals(dbPassword)) {
-                String uuid = UUID.randomUUID().toString();
-                TempraryUserStorage.sessionStorage.put(uuid, username);
-                response.addCookie(new Cookie("my_session",uuid));
-                renderResult(out,"Login Success");
+            if (logedInUser == null) {
+                String username = request.getParameter("username");
+                String password = request.getParameter("password");
+                Object dbPassword = TempraryUserStorage.userDatabase.get(username);
+                if (password != null && password.equals(dbPassword)) {
+                    session.setAttribute(SESSION_KEY, username);
+                } else {
+                    renderResult(out, "Login Fail");
+                }
+
             } else {
-                renderResult(out,"Login Fail");
+                //already login
+                renderResult(out, "Already Login");
             }
 
         }
     }
 
-    private void renderResult(final PrintWriter out,String msg) {
+    private void renderResult(final PrintWriter out, String msg) {
         out.println("<!DOCTYPE html>");
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Servlet LoginServlet</title>");
         out.println("</head>");
         out.println("<body>");
-        out.println("<h1>"+msg+"</h1>");
+        out.println("<h1>" + msg + "</h1>");
         out.println("</body>");
         out.println("</html>");
     }

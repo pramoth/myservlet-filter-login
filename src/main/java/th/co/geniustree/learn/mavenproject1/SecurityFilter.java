@@ -16,15 +16,11 @@ public class SecurityFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain fc) throws IOException, ServletException {
         System.out.println("-------before--------");
         HttpServletRequest httpReq = (HttpServletRequest) request;
+        String username = (String)httpReq.getSession().getAttribute(LoginServlet.SESSION_KEY);
         if (httpReq.getRequestURI().endsWith("login") || httpReq.getRequestURI().endsWith("logout")) {
             fc.doFilter(request, response);
         } else {
-            Cookie[] cookies = httpReq.getCookies();
-            if (cookies == null) {
-                cookies = new Cookie[]{};
-            }
-            String sessionKey = findSessionKey(cookies);
-            if (sessionKey != null) {
+            if (username != null) {
                 fc.doFilter(request, response);
             } else {
                 HttpServletResponse httpRes = (HttpServletResponse) response;
@@ -33,12 +29,6 @@ public class SecurityFilter implements Filter {
             }
         }
         System.out.println("-------after--------");
-    }
-
-    String findSessionKey(Cookie[] cookies) {
-        return Stream.of(cookies).filter(e -> e.getName().equals("my_session"))
-                .findFirst()
-                .map(e -> TempraryUserStorage.sessionStorage.get(e.getValue())).orElse(null);
     }
 
 }

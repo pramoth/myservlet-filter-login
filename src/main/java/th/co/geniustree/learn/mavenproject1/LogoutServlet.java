@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package th.co.geniustree.learn.mavenproject1;
 
 import jakarta.servlet.*;
@@ -23,21 +19,7 @@ public class LogoutServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            Cookie[] cookies = request.getCookies();
-            if (cookies == null) {
-                cookies = new Cookie[]{};
-            }
-            String sessionKey = findSessionKey(cookies);
-            
-            TempraryUserStorage.sessionStorage.remove(sessionKey);
-        }
-    }
-    
-     String findSessionKey(Cookie[] cookies) {
-        return Stream.of(cookies).filter(e -> e.getName().equals("my_session"))
-                .findFirst()
-                .map(e -> TempraryUserStorage.sessionStorage.get(e.getValue())).orElse(null);
+        request.getSession().invalidate();
     }
     
     
